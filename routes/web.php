@@ -16,17 +16,11 @@ use App\Http\Controllers\Main;
 |
 */
 
-Route::get('/', function () {
+Route::get('/', [Main::class, 'index'])->name('main');
 
-    try {
-        DB::connection()->getPDO();
-        echo "Conexão efetuada com sucesso, Base de dados: ".DB::connection()->getDataBaseName();
-    } catch (Exception $e) {
-        die("Erro ao conectar a base de dados. ERROR: ".$e->getMessage());
-    }
+// Login routes
+Route::get('/login', [Main::class, 'login'])->name('login');
+Route::post('/login_submit', [Main::class, 'login_submit'])->name('login_submit');
 
-});
-
-Route::get('/main', [Main::class, 'index']);
-Route::get('/users', [Main::class, 'users']);
-Route::get('/view', [Main::class, 'view']);
+// Main page
+Route::get('/main', [Main::class, 'main'])->name('main');

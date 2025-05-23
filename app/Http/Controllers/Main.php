@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\UserModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -10,39 +9,30 @@ class Main extends Controller
 {
     public function index()
     {
+        echo 'Gestor de Tarefas';
+    }
+
+    public function login()
+    {
         $data = [
-            'title' => 'Olá Laravel 10',
-            'description' => 'Aprendendo Laravel 10'
+            'title' => 'Login'
+        ];
+
+        return view('login_frm', $data);
+    }
+
+    public function login_submit()
+    {
+        echo 'Submissão do Login';
+    }
+
+    // Main page
+    public function main()
+    {
+        $data = [
+            'title' => 'Main'
         ];
 
         return view('main', $data);
-    }
-
-    public function users()
-    {
-        // get users with raw sql
-        //$users = DB::select('SELECT * FROM users');
-
-        //with query builder
-        //$users = DB::table('users')->get();
-
-        // with query builder - return in array
-        //$users = DB::table('users')->get()->toArray();
-        
-        //using Eloquent ORM - Using Model
-        $model = new UserModel();
-
-        $users = $model->all();
-
-        dd($users);
-    }
-
-    public function view()
-    {
-        $data = [
-            'title' => "Título da pagina"
-        ];
-
-        return view('home', $data);
     }
 }
