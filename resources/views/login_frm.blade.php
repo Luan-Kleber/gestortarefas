@@ -21,6 +21,17 @@
                 <button type="submit" class="btn btn-dark w-100">Entrar</button>
             </div>
         </form>
+
+        @if($errors->any())
+            <div class="alert alert-danger pp-2">
+                @foreach ($errors->any() as $error)
+                    <span class="validation">
+                        {{$error}}
+                    </span>
+                @endforeach
+            </div>
+        @endif
+
     </div>
 </div>
 

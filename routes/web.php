@@ -16,11 +16,18 @@ use App\Http\Controllers\Main;
 |
 */
 
-Route::get('/', [Main::class, 'index'])->name('main');
+// out app
+Route::middleware('CheckLogout')->group(function(){
 
-// Login routes
-Route::get('/login', [Main::class, 'login'])->name('login');
-Route::post('/login_submit', [Main::class, 'login_submit'])->name('login_submit');
+    Route::get('/login', [Main::class, 'login'])->name('login');
+    Route::post('/login_submit', [Main::class, 'login_submit'])->name('login_submit');
 
-// Main page
-Route::get('/main', [Main::class, 'main'])->name('main');
+});
+
+// in app
+Route::middleware('CheckLogin')->group(function(){
+
+    Route::get('/', [Main::class, 'index'])->name('index');
+    Route::get('/logout', [Main::class, 'logout'])->name('logout');
+
+});
