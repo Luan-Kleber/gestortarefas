@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
+use App\Models\UserModel;
+
 class Main extends Controller
 {
     /**
@@ -44,7 +46,37 @@ class Main extends Controller
             'text_password.min' => 'O campo deve ter no mínimo 3 caracteres.',
         ]);
 
-        echo "formulário com sucesso!";
+        //get form data
+        $username = $request->input('text_username');
+        $password = $request->input('text_password');
+
+        //check if user exists
+        $model = new UserModel();
+        $user = $model->where('username', '=', $username)
+                ->whereNull('deleted_at')
+                ->first();
+
+        if($user) {
+
+            // check if password is correct
+            if(password_verify($password, $user->password)) {
+                
+                $session_data = [
+                    'id' => $user->id,
+                    'username' => $user->username
+                ];
+
+                session()->put($session_data);
+
+                return redirect()->route('index');
+            }
+        }
+
+        // invalid login
+        return redirect()
+        ->route('login')
+        ->withInput()
+        ->with('login_error', 'Login Inválido');
     }
 
     /**
