@@ -16,6 +16,7 @@ class Main extends Controller
     {
         $data = [
             'title' => 'Gestor de Tarefas',
+            'datatables' => true,
             'tasks' => $this->_get_tasks()
         ];
 
@@ -101,9 +102,47 @@ class Main extends Controller
         return view('new_task_frm', $data);
     }
 
-    public function new_task_submit()
+    public function new_task_submit(Request $request)
     {
-        echo "guardar nova tarefas";
+        // form validation
+        $request->validate([
+            'text_task_name' => 'required|min:3|max:200',
+            'text_task_description' => 'required|min:3|max:1000',
+        ], [
+            'text_task_name.required' => 'O campo é de preenchimento obrigatório.',
+            'text_task_name.min' => 'O campo deve ter no mínimo :min caracteres.',
+            'text_task_name.max' => 'O campo deve ter no máximo :max caracteres.',
+
+            'text_task_description.required' => 'O campo é de preenchimento obrigatório.',
+            'text_task_description.min' => 'O campo deve ter no mínimo :min caracteres.',
+            'text_task_description.max' => 'O campo deve ter no máximo :max caracteres.',
+        ]);
+
+        //get form data
+        $task_name = $request->input('text_task_name');
+        $task_description = $request->input('text_task_description');
+
+        //check is there is already another task with the same name for the same user
+        $model = new TaskModel();
+        
+        $task = $model->where('id_user', '=', session('id'))
+                ->where('task_name', '=', $task_name)
+                ->whereNull('deleted_at')
+                ->first();
+
+        if($task) {
+            return redirect()->route('new_task')->with('task_error', 'Já existe uma tarefa com o mesmo nome.');
+        }
+        
+        //insert new task
+        $model->id_user = session('id');
+        $model->task_name = $task_name;
+        $model->task_description = $task_description;
+        $model->task_status = 'new';
+        $model->created_at = date('Y-m-d H:s:i');
+        $model->save();
+
+        return redirect()->route('index');
     }
 
     /**
@@ -113,8 +152,41 @@ class Main extends Controller
     {
         $model = new TaskModel;
 
-        return $model->where('id_user', '=', session()->get('id'))
-                ->whereNull('deleted_at')
-                ->get();
+        $tasks = $model->where('id_user', '=', session('id'))
+                        ->whereNull('deleted_at')
+                        ->get();
+
+        $collection = [];
+
+        foreach($tasks as $task) {
+
+            $link_edit = '<a href="'.route('edit_task', ['id' => $task->id]).'" class="btn btn-secondary me-2"><i class="bi bi-pencil-square"></i></a>';
+            $link_delete = '<a href="'.route('delete_task', ['id' => $task->id]).'" class="btn btn-danger"><i class="bi bi-trash"></i></a>';
+
+            $collection[] = [
+                'task_name' => $task->task_name,
+                'task_status' => $this->_status_name($task->task_status),
+                'task_actions' => $link_edit . $link_delete
+            ];
+
+        }
+
+        return $collection;
+    }
+
+    private function _status_name($status)
+    {
+        $status_collection = [
+            'new' => 'Nova',
+            'in_progress' => 'Em progresso',
+            'cancelled' => 'Cancelada',
+            'completed' => 'Concluída'
+        ];
+
+        if(key_exists($status, $status_collection)) {
+            return $status_collection[$status];
+        } else {
+            return 'Desconhecido';
+        }
     }
 }
